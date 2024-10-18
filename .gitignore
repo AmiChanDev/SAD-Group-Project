@@ -19,5 +19,3 @@ readme.md
 *.out
 *~
 *.swp
-*.DS_Store
-*.lock
