@@ -167,16 +167,22 @@ public class EmployeeLogin extends javax.swing.JFrame {
                     this.dispose();
                     logger.log(Level.INFO, "Employee {0} logged in", email);
 //Attendance is marked for the day
-                    SQL.executeSearch("SELECT * FROM `attendance` WHERE  `Date` = '" + dateTime + "'");
-                    if(result.next()){
+                    ResultSet attendanceResult = SQL.executeSearch("SELECT * FROM `attendence` WHERE  `Date` = '" + dateTime + "'");
+                    if (attendanceResult.next()) {
 //                        Do nothing
-                    }else{
-                        SQL.executeIUD("INSERT INTO `attendace` (`date`,`employee_email`) VALUES ('"+dateTime+"','"+email+"')");
-//Attendance count
-                    SQL.executeIUD("");
-                        
+                    } else {
+                        SQL.executeIUD("INSERT INTO `attendence` (`date`,`employee_email`) VALUES ('" + dateTime + "','" + email + "')");
+//Attendance count +
+                        ResultSet count = SQL.executeSearch("SELECT * FROM `attendance_count` WHERE `employee_email` = '" + email + "'");
+                        if (count.next()) {
+                            int currentCount = count.getInt("count");
+                            int newCount = currentCount + 1;
+                            SQL.executeIUD("UPDATE `attendance_count` SET `count`= '" + newCount + "' WHERE `employee_email` = '" + email + "'");
+                            
+                            Notifications.getInstance().show(Notifications.Type.INFO, Notifications.Location.TOP_CENTER, "Attendance Marked");
+                        }
                     }
-                    
+
                 } else {
                     Notifications.getInstance().show(Notifications.Type.WARNING, Notifications.Location.TOP_CENTER, "Wrong email or password");
                 }
