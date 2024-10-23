@@ -5,6 +5,8 @@
 package rashmika.gui;
 
 import com.myapp.themes.MyCustomLaf;
+import java.awt.Component;
+import java.awt.Container;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Vector;
@@ -20,7 +22,16 @@ import pasan.gui.supplierRegistration;
 import rashmika.model.GRNItems;
 import model.MySQL;
 import java.sql.ResultSet;
+import java.text.DecimalFormat;
 import java.util.Date;
+import javax.swing.JFormattedTextField;
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultFormatterFactory;
+import javax.swing.text.DocumentFilter;
+import javax.swing.text.NumberFormatter;
+import java.text.NumberFormat;
 
 /**
  *
@@ -88,6 +99,8 @@ public class GRN extends javax.swing.JFrame {
     public GRN() {
         initComponents();
         genarateGRNid();
+        quantityLimit();
+        applyPriceLimitToAll(rootPane);
 
         DefaultTableCellRenderer renderer = new DefaultTableCellRenderer();
         renderer.setHorizontalAlignment(SwingConstants.CENTER);
@@ -95,8 +108,10 @@ public class GRN extends javax.swing.JFrame {
 
         jTextField1.setEditable(false);
         jTextField2.setEditable(false);
+        
+        jTextField4.setText("0");
 
-        jLabel3.setText("shivoni@gmail.com");
+        jLabel3.setText("ps@gmail.com");
     }
 
     public void genarateGRNid() {
@@ -163,6 +178,60 @@ public class GRN extends javax.swing.JFrame {
         }
 
     }
+    
+    public void quantityLimit() {
+        try {
+            // Add a DocumentFilter to allow only numeric input
+            ((AbstractDocument) jTextField4.getDocument()).setDocumentFilter(new DocumentFilter() {
+                @Override
+                public void insertString(DocumentFilter.FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
+                    // Allow only digits (no length restriction here)
+                    if (string.matches("[0-9]+")) {
+                        super.insertString(fb, offset, string, attr);
+                    }
+                }
+                
+                @Override
+                public void replace(DocumentFilter.FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
+                    // Allow only digits (no length restriction here)
+                    if (text.matches("[0-9]+")) {
+                        super.replace(fb, offset, length, text, attrs);
+                    }
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    public void priceLimit(JFormattedTextField formattedTextField) {
+        // Create a NumberFormatter that allows decimals
+        DecimalFormat decimalFormat = new DecimalFormat("#,##0.00"); // Allows decimal points
+        decimalFormat.setGroupingUsed(false); // Disable grouping (e.g., no thousands separator)
+        
+        NumberFormatter formatter = new NumberFormatter(decimalFormat);
+        formatter.setValueClass(Double.class); // Use Double type to allow decimal numbers
+        formatter.setAllowsInvalid(false);     // Prevent invalid input
+        formatter.setMinimum(null);             // Set a minimum value (e.g., no negative prices)
+
+        // Apply the formatter to the JFormattedTextField
+        formattedTextField.setFormatterFactory(new DefaultFormatterFactory(formatter));
+    }
+
+    // Method to apply the priceLimit() to all JFormattedTextFields in a container
+    public void applyPriceLimitToAll(Container container) {
+        for (Component component : container.getComponents()) {
+            // If the component is a container (e.g., JPanel), apply the method recursively
+            if (component instanceof Container) {
+                applyPriceLimitToAll((Container) component);
+            }
+
+            // If the component is a JFormattedTextField, apply the priceLimit method
+            if (component instanceof JFormattedTextField) {
+                priceLimit((JFormattedTextField) component);
+            }
+        }
+    }
 
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -199,7 +268,7 @@ public class GRN extends javax.swing.JFrame {
         jLabel17 = new javax.swing.JLabel();
         jDateChooser1 = new com.toedter.calendar.JDateChooser();
         jLabel18 = new javax.swing.JLabel();
-        jFormattedTextField3 = new javax.swing.JFormattedTextField();
+        jTextField4 = new javax.swing.JTextField();
         jPanel3 = new javax.swing.JPanel();
         jLabel19 = new javax.swing.JLabel();
         jLabel20 = new javax.swing.JLabel();
@@ -350,6 +419,7 @@ public class GRN extends javax.swing.JFrame {
         jLabel15.setText("Buying Price");
         jPanel4.add(jLabel15);
 
+        jFormattedTextField1.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.NumberFormatter(new java.text.DecimalFormat("#0.00"))));
         jFormattedTextField1.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         jPanel4.add(jFormattedTextField1);
 
@@ -377,8 +447,8 @@ public class GRN extends javax.swing.JFrame {
         jLabel18.setText("Quantity");
         jPanel8.add(jLabel18);
 
-        jFormattedTextField3.setHorizontalAlignment(javax.swing.JTextField.CENTER);
-        jPanel8.add(jFormattedTextField3);
+        jTextField4.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        jPanel8.add(jTextField4);
 
         jPanel1.add(jPanel8);
 
@@ -616,7 +686,7 @@ public class GRN extends javax.swing.JFrame {
         String waranty = jLabel14.getText();
         String buyingPrice = jFormattedTextField1.getText();
         String sellingPrice = jFormattedTextField2.getText();
-        String quantity = jFormattedTextField3.getText();
+        String quantity = jTextField4.getText();
         String supplierContact = jTextField3.getText();
 
         if (employee == null) {
@@ -645,7 +715,7 @@ public class GRN extends javax.swing.JFrame {
                 } else if (!sellingPrice.matches("^\\d+(\\.\\d+)?$")) {
                     JOptionPane.showMessageDialog(this, "Please Check(symbols) the Selling Price", "Warning", JOptionPane.WARNING_MESSAGE);
 
-                } else if (quantity.isEmpty()) {
+                } else if (quantity.equals("0")) {
                     JOptionPane.showMessageDialog(this, "Please Enter the Quantity", "Warning", JOptionPane.WARNING_MESSAGE);
 
                 } else if (Integer.parseInt(quantity) < 0) {
@@ -822,7 +892,6 @@ public class GRN extends javax.swing.JFrame {
     private com.toedter.calendar.JDateChooser jDateChooser1;
     private javax.swing.JFormattedTextField jFormattedTextField1;
     private javax.swing.JFormattedTextField jFormattedTextField2;
-    private javax.swing.JFormattedTextField jFormattedTextField3;
     private javax.swing.JFormattedTextField jFormattedTextField4;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
@@ -875,6 +944,7 @@ public class GRN extends javax.swing.JFrame {
     private javax.swing.JTextField jTextField1;
     private javax.swing.JTextField jTextField2;
     private javax.swing.JTextField jTextField3;
+    private javax.swing.JTextField jTextField4;
     // End of variables declaration//GEN-END:variables
 
     private void reset() {
@@ -884,10 +954,10 @@ public class GRN extends javax.swing.JFrame {
         jLabel10.setText("NULL");
         jLabel12.setText("NULL");
         jLabel14.setText("NULL");
-        jFormattedTextField1.setText("");
-        jFormattedTextField2.setText("");
-        jFormattedTextField3.setText("");
-        jFormattedTextField4.setText("");
+        jFormattedTextField1.setValue(null);
+        jFormattedTextField2.setValue(null);
+        jTextField4.setText("0");
+        jFormattedTextField4.setValue(null);
         jLabel20.setText("NULL");
         jLabel22.setText("NULL");
         jLabel24.setText("NULL");
