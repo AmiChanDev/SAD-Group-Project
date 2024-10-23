@@ -202,6 +202,7 @@ public class RepairInvoice extends javax.swing.JFrame {
         jTextField7 = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setTitle("Repair Invoice");
         setAlwaysOnTop(true);
 
         jFormattedTextField5.setEditable(false);

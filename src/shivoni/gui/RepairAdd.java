@@ -86,7 +86,7 @@ public class RepairAdd extends javax.swing.JFrame {
 
                 ResultSet rs2 = MySQL.executeSearch("select * from `repair_request_item` where `invoice_id`='" + rs.getString("invoice.id") + "' and `stock_id`='" + rs.getString("stock.id") + "'  ");
 
-                if (rs.next()) {
+                if (rs2.next()) {
                     vector.add("yes");
                 } else {
                     vector.add("no");
@@ -228,6 +228,7 @@ public class RepairAdd extends javax.swing.JFrame {
         jTable2 = new javax.swing.JTable();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setTitle("Add Repair");
         setAlwaysOnTop(true);
 
         jLabel1.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N

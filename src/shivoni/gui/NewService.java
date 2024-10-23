@@ -81,6 +81,7 @@ public class NewService extends javax.swing.JFrame {
         jTextField3 = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setTitle("Service Add");
         setAlwaysOnTop(true);
 
         jLabel1.setText("Add New Service");

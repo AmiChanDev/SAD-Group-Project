@@ -228,6 +228,7 @@ public class RepairCompletion extends javax.swing.JFrame {
         jButton5 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setTitle("Repair Completion");
         setAlwaysOnTop(true);
 
         jLabel1.setText("Repair Completion Details");
