@@ -86,7 +86,7 @@ public class RepairAdd extends javax.swing.JFrame {
 
                 ResultSet rs2 = MySQL.executeSearch("select * from `repair_request_item` where `invoice_id`='" + rs.getString("invoice.id") + "' and `stock_id`='" + rs.getString("stock.id") + "'  ");
 
-                if (rs.next()) {
+                if (rs2.next()) {
                     vector.add("yes");
                 } else {
                     vector.add("no");
@@ -166,11 +166,12 @@ public class RepairAdd extends javax.swing.JFrame {
     }
 
     private void loadOldRepairProducts() {
-        String oldRid = jTextField5.getText();
+      //  String oldRid = jTextField5.getText();
+      String oldInvoiceId = jTextField5.getText();
 
         try {
 
-            ResultSet rs = MySQL.executeSearch("SELECT * FROM `repair_request_item` inner join `repair_status` on `repair_status`.`id`=`repair_request_item`.`repair_status_id` inner join `repair_request` on `repair_request`.`repair_id`=`repair_request_item`.`repair_request_repair_id` WHERE `repair_request_repair_id` like '" + oldRid + "%' ");
+            ResultSet rs = MySQL.executeSearch("SELECT * FROM `repair_request_item` inner join `repair_status` on `repair_status`.`id`=`repair_request_item`.`repair_status_id` inner join `repair_request` on `repair_request`.`repair_id`=`repair_request_item`.`repair_request_repair_id` WHERE `repair_request_item`.`invoice_id` like '" + oldInvoiceId + "%' ");
 
             DefaultTableModel dtm = (DefaultTableModel) jTable2.getModel();
             dtm.setRowCount(0);
@@ -227,6 +228,7 @@ public class RepairAdd extends javax.swing.JFrame {
         jTable2 = new javax.swing.JTable();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setTitle("Add Repair");
         setAlwaysOnTop(true);
 
         jLabel1.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
@@ -433,6 +435,11 @@ public class RepairAdd extends javax.swing.JFrame {
         jLabel6.setForeground(new java.awt.Color(153, 0, 0));
         jLabel6.setText("Old Repair");
 
+        jTextField5.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jTextField5ActionPerformed(evt);
+            }
+        });
         jTextField5.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 jTextField5KeyReleased(evt);
@@ -473,10 +480,11 @@ public class RepairAdd extends javax.swing.JFrame {
                         .addGap(14, 14, 14)
                         .addComponent(jLabel6)
                         .addGap(0, 245, Short.MAX_VALUE))
-                    .addComponent(jTextField5, javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(jPanel3Layout.createSequentialGroup()
                         .addContainerGap()
-                        .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)))
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jTextField5, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
@@ -636,6 +644,8 @@ public class RepairAdd extends javax.swing.JFrame {
             String invoiceId = String.valueOf(jTable1.getValueAt(row, 0));
 
             jTextField3.setText(String.valueOf(jTable1.getValueAt(row, 0)));
+            
+            if(String.valueOf(jTable1.getValueAt(row, 9)).equals("yes")){
 
             int option = JOptionPane.showConfirmDialog(this, "Do you want to view repair history?", "Warning", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
 
@@ -652,6 +662,7 @@ public class RepairAdd extends javax.swing.JFrame {
                     fr.requestFocus();
 
                 }
+            }
 
             }
         }
@@ -677,7 +688,8 @@ public class RepairAdd extends javax.swing.JFrame {
         String status = String.valueOf(jTable2.getValueAt(row, 3));
 
         if (status.equals("Collected")) {
-
+         //   this.repairID =String.valueOf(jTable2.getValueAt(row, 0));
+         //   jTextField1.setText(this.repairID);
             loadOldRepairInvoiceItems();
         } else {
 
@@ -703,6 +715,10 @@ public class RepairAdd extends javax.swing.JFrame {
 
    
     }//GEN-LAST:event_jTable3MouseClicked
+
+    private void jTextField5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField5ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jTextField5ActionPerformed
 
     /**
      * @param args the command line arguments

@@ -228,6 +228,7 @@ public class RepairCompletion extends javax.swing.JFrame {
         jButton5 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setTitle("Repair Completion");
         setAlwaysOnTop(true);
 
         jLabel1.setText("Repair Completion Details");
@@ -702,7 +703,7 @@ public class RepairCompletion extends javax.swing.JFrame {
                                this.warrantyStatus = "No Warranty";
                           }
                           
-                          repairInvoice = new RepairInvoice(jTextField1.getText(),jTextField3.getText(),jTextArea1.getText(),warrantyStatus);
+                          repairInvoice = new RepairInvoice(jTextField1.getText(),jTextField3.getText(),jTextArea1.getText(),jTextField2.getText(),warrantyStatus);
                           repairInvoice.setVisible(true);
                           this.dispose();
                           parent.dispose();
