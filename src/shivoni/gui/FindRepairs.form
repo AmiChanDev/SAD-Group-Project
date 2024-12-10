@@ -230,7 +230,7 @@
             <Component class="javax.swing.JTable" name="jTable2">
               <Properties>
                 <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
-                  <Table columnCount="11" rowCount="0">
+                  <Table columnCount="12" rowCount="0">
                     <Column editable="false" title="Repaire ID" type="java.lang.Object"/>
                     <Column editable="false" title="Invoice ID" type="java.lang.Object"/>
                     <Column editable="false" title="Stock ID" type="java.lang.Object"/>
@@ -242,10 +242,16 @@
                     <Column editable="false" title=" Purchased Date" type="java.lang.Object"/>
                     <Column editable="false" title="Status" type="java.lang.Object"/>
                     <Column editable="false" title="Quantity" type="java.lang.Object"/>
+                    <Column editable="false" title="Repair Term" type="java.lang.Object"/>
                   </Table>
                 </Property>
                 <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor">
                   <TableColumnModel selectionModel="0">
+                    <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
+                      <Title/>
+                      <Editor/>
+                      <Renderer/>
+                    </Column>
                     <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
                       <Title/>
                       <Editor/>
@@ -340,7 +346,7 @@
                       <Component id="jTextField6" pref="243" max="32767" attributes="0"/>
                       <Component id="jTextField1" max="32767" attributes="0"/>
                   </Group>
-                  <EmptySpace pref="82" max="32767" attributes="0"/>
+                  <EmptySpace pref="218" max="32767" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="1" attributes="0">
                           <Component id="jLabel12" min="-2" max="-2" attributes="0"/>

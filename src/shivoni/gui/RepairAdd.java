@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
-package gui;
+package shivoni.gui;
 
 import com.formdev.flatlaf.themes.FlatMacDarkLaf;
 import java.sql.ResultSet;
@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.Random;
 import java.util.concurrent.locks.Condition;
 import javax.swing.JOptionPane;
+import javax.swing.JTextField;
 import model.RepairProductItem;
 
 /**
@@ -32,6 +33,10 @@ public class RepairAdd extends javax.swing.JFrame {
         loadInvoiceItems();
         generateRepairProductId();
         jTextField2.setText("shivoni@gmail.com");
+    }
+    
+    public JTextField getjTextField3(){
+        return jTextField3;
     }
 
     private String repairID;
@@ -100,6 +105,11 @@ public class RepairAdd extends javax.swing.JFrame {
         }
 
     }
+    
+    public void invokeLoadInvoiceItems() {
+    loadInvoiceItems();
+    
+    }
 
     private void loadOldRepairInvoiceItems() {
 
@@ -132,7 +142,7 @@ public class RepairAdd extends javax.swing.JFrame {
 
                 ResultSet rs2 = MySQL.executeSearch("select * from `repair_request_item` where `invoice_id`='" + rs.getString("invoice.id") + "' and `stock_id`='" + rs.getString("stock.id") + "'  ");
 
-                if (rs.next()) {
+                if (rs2.next()) {
                     vector.add("yes");
                 } else {
                     vector.add("no");
@@ -165,13 +175,28 @@ public class RepairAdd extends javax.swing.JFrame {
 
     }
 
-    private void loadOldRepairProducts() {
-      //  String oldRid = jTextField5.getText();
-      String oldInvoiceId = jTextField5.getText();
+    private void loadOldRepairProducts(String oldInvoiceId) {
 
         try {
 
-            ResultSet rs = MySQL.executeSearch("SELECT * FROM `repair_request_item` inner join `repair_status` on `repair_status`.`id`=`repair_request_item`.`repair_status_id` inner join `repair_request` on `repair_request`.`repair_id`=`repair_request_item`.`repair_request_repair_id` WHERE `repair_request_item`.`invoice_id` like '" + oldInvoiceId + "%' ");
+            String query = "SELECT * FROM `repair_request_item` inner join `repair_status` on `repair_status`.`id`=`repair_request_item`.`repair_status_id` inner join `repair_request` on `repair_request`.`repair_id`=`repair_request_item`.`repair_request_repair_id` WHERE `repair_request_item`.`invoice_id` like '" + oldInvoiceId + "%'";
+
+            List<String> conditions = new ArrayList();
+
+            int row = jTable1.getSelectedRow();
+            if (row != -1) {
+                String oldStockId = String.valueOf(jTable1.getValueAt(row, 2));
+
+                conditions.add("`repair_request_item`.`stock_id` LIKE '" + oldStockId + "%' ");
+
+                if (!conditions.isEmpty()) {
+                    query += "AND" + String.join(" AND", conditions);
+                }
+            }
+
+            query += "ORDER BY `repair_request_item`.`repair_iteration` DESC ";
+
+            ResultSet rs = MySQL.executeSearch(query);
 
             DefaultTableModel dtm = (DefaultTableModel) jTable2.getModel();
             dtm.setRowCount(0);
@@ -182,6 +207,7 @@ public class RepairAdd extends javax.swing.JFrame {
                 vector.add(rs.getString("repair_request_item.invoice_id"));
                 vector.add(rs.getString("stock_id"));
                 vector.add(rs.getString("repair_status.name"));
+                vector.add(rs.getString("repair_request_item.repair_iteration"));
                 dtm.addRow(vector);
 
             }
@@ -208,7 +234,6 @@ public class RepairAdd extends javax.swing.JFrame {
         jTextField2 = new javax.swing.JTextField();
         jLabel4 = new javax.swing.JLabel();
         jTextField3 = new javax.swing.JTextField();
-        jButton3 = new javax.swing.JButton();
         jScrollPane2 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
         jLabel8 = new javax.swing.JLabel();
@@ -226,6 +251,7 @@ public class RepairAdd extends javax.swing.JFrame {
         jTextField5 = new javax.swing.JTextField();
         jScrollPane3 = new javax.swing.JScrollPane();
         jTable2 = new javax.swing.JTable();
+        jButton3 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Add Repair");
@@ -237,6 +263,11 @@ public class RepairAdd extends javax.swing.JFrame {
         jLabel2.setText("Repair ID");
 
         jTextField1.setEditable(false);
+        jTextField1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jTextField1ActionPerformed(evt);
+            }
+        });
 
         jLabel3.setText("Employee");
 
@@ -249,16 +280,14 @@ public class RepairAdd extends javax.swing.JFrame {
 
         jLabel4.setText("Invoice ID");
 
+        jTextField3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jTextField3ActionPerformed(evt);
+            }
+        });
         jTextField3.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 jTextField3KeyReleased(evt);
-            }
-        });
-
-        jButton3.setText("Clear All");
-        jButton3.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton3ActionPerformed(evt);
             }
         });
 
@@ -314,30 +343,27 @@ public class RepairAdd extends javax.swing.JFrame {
                         .addGap(18, 18, 18)
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 475, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(jButton4, javax.swing.GroupLayout.DEFAULT_SIZE, 267, Short.MAX_VALUE))
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 61, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jTextField3, javax.swing.GroupLayout.PREFERRED_SIZE, 216, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(jLabel5)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jTextField4, javax.swing.GroupLayout.PREFERRED_SIZE, 148, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addGroup(jPanel1Layout.createSequentialGroup()
                                 .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 126, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jLabel2)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 183, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(jLabel3)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, 236, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(0, 111, Short.MAX_VALUE)))
+                                .addComponent(jLabel2))
+                            .addComponent(jLabel4))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(jTextField1, javax.swing.GroupLayout.DEFAULT_SIZE, 227, Short.MAX_VALUE)
+                            .addComponent(jTextField3))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel3)
+                            .addComponent(jLabel5))
+                        .addGap(42, 42, 42)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, 236, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jTextField4, javax.swing.GroupLayout.PREFERRED_SIZE, 148, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(19, 19, 19)))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -350,17 +376,13 @@ public class RepairAdd extends javax.swing.JFrame {
                     .addComponent(jLabel2)
                     .addComponent(jLabel3)
                     .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(26, 26, 26)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(3, 3, 3)
-                        .addComponent(jLabel4))
-                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(jTextField3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(jButton3)
-                        .addComponent(jLabel5)
-                        .addComponent(jTextField4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGap(18, 18, 18)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jTextField4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel5)
+                    .addComponent(jTextField3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel4))
+                .addGap(26, 26, 26)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 221, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
@@ -451,11 +473,11 @@ public class RepairAdd extends javax.swing.JFrame {
 
             },
             new String [] {
-                "Repair Id", "Invoice Id", "Stock ID", "Repair Status"
+                "Repair Id", "Invoice ID", "Stock ID", "Repair Status", "Repair Term"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false, false
+                false, false, false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -479,13 +501,12 @@ public class RepairAdd extends javax.swing.JFrame {
                     .addGroup(jPanel3Layout.createSequentialGroup()
                         .addGap(14, 14, 14)
                         .addComponent(jLabel6)
-                        .addGap(0, 245, Short.MAX_VALUE))
+                        .addGap(0, 267, Short.MAX_VALUE))
                     .addGroup(jPanel3Layout.createSequentialGroup()
                         .addContainerGap()
-                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jTextField5, javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))))
+                        .addComponent(jTextField5)))
                 .addContainerGap())
+            .addComponent(jScrollPane3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -495,9 +516,16 @@ public class RepairAdd extends javax.swing.JFrame {
                 .addGap(28, 28, 28)
                 .addComponent(jTextField5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 201, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(16, Short.MAX_VALUE))
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 211, Short.MAX_VALUE)
+                .addContainerGap())
         );
+
+        jButton3.setText("Clear All");
+        jButton3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton3ActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -506,9 +534,15 @@ public class RepairAdd extends javax.swing.JFrame {
             .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addContainerGap())
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(31, 31, 31))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -517,8 +551,9 @@ public class RepairAdd extends javax.swing.JFrame {
                     .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jButton3)
+                        .addGap(27, 27, 27)))
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
@@ -537,59 +572,73 @@ public class RepairAdd extends javax.swing.JFrame {
         if (row == -1) {
             JOptionPane.showMessageDialog(this, "Please select a row", "Warning", JOptionPane.WARNING_MESSAGE);
         } else {
-
-            if (jTextField4.getText().isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Please type quantity", "Warning", JOptionPane.WARNING_MESSAGE);
-            } else if (!jTextField4.getText().matches("^\\d+$")) {
-                JOptionPane.showMessageDialog(this, "Invalid Quantity ", "Warning", JOptionPane.WARNING_MESSAGE);
-            } else if (jTextArea1.getText().isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Please type the problem", "Warning", JOptionPane.WARNING_MESSAGE);
-            } else {
-
-                Double repairqty = Double.parseDouble(jTextField4.getText());
-                Double invoiceItemQty = Double.parseDouble(String.valueOf(jTable1.getValueAt(row, 5)));
-
-                if (repairqty > invoiceItemQty) {
-                    JOptionPane.showMessageDialog(this, "Add valid qty less than " + invoiceItemQty, "Warning", JOptionPane.WARNING_MESSAGE);
+            boolean canAdd = false;
+            
+            if (jTable2.getRowCount() > 0) {
+                jTable2.setRowSelectionInterval(0, 0);
+                String oldRepairStatus = String.valueOf(jTable2.getValueAt(0, 3));
+                if (!oldRepairStatus.equals("Collected")) {
+                    JOptionPane.showMessageDialog(this, "This product is still in repair process", "Warning", JOptionPane.WARNING_MESSAGE);
+                    
+                }else{
+                    canAdd=true;
+                }
+            }else{
+               canAdd=true; 
+            }
+            
+            if(canAdd){
+                if (jTextField4.getText().isEmpty()) {
+                    JOptionPane.showMessageDialog(this, "Please type quantity", "Warning", JOptionPane.WARNING_MESSAGE);
+                } else if (!jTextField4.getText().matches("^\\d+$")) {
+                    JOptionPane.showMessageDialog(this, "Invalid Quantity ", "Warning", JOptionPane.WARNING_MESSAGE);
+                } else if (jTextArea1.getText().isEmpty()) {
+                    JOptionPane.showMessageDialog(this, "Please type the problem", "Warning", JOptionPane.WARNING_MESSAGE);
                 } else {
 
-                    RepairProductItem rpi = new RepairProductItem();
-                    rpi.setRepairID(repairID);
-                    rpi.setEmpEmail(String.valueOf(jTextField2.getText()));
-                    rpi.setInvoiceId(String.valueOf(jTable1.getValueAt(row, 0)));
-                    rpi.setProblem(jTextArea1.getText());
-                    rpi.setQty(jTextField4.getText());
-                    rpi.setStockId(String.valueOf(jTable1.getValueAt(row, 2)));
+                    Double repairqty = Double.parseDouble(jTextField4.getText());
+                    Double invoiceItemQty = Double.parseDouble(String.valueOf(jTable1.getValueAt(row, 5)));
 
-                    String uniqueKey = String.valueOf(jTable1.getValueAt(row, 0)) + "-" + String.valueOf(jTable1.getValueAt(row, 2));
-
-                    if (repairProductMap.get(uniqueKey) == null) {
-                        repairProductMap.put(uniqueKey, rpi);
+                    if (repairqty > invoiceItemQty) {
+                        JOptionPane.showMessageDialog(this, "Add valid qty less than " + invoiceItemQty, "Warning", JOptionPane.WARNING_MESSAGE);
                     } else {
-                        RepairProductItem found = repairProductMap.get(uniqueKey);
 
-                        int option = JOptionPane.showConfirmDialog(this, "Do you want to update quantity of the repair product: " + String.valueOf(jTable1.getValueAt(row, 3)), "Warning ", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
+                        RepairProductItem rpi = new RepairProductItem();
+                        rpi.setRepairID(repairID);
+                        rpi.setEmpEmail(String.valueOf(jTextField2.getText()));
+                        rpi.setInvoiceId(String.valueOf(jTable1.getValueAt(row, 0)));
+                        rpi.setProblem(jTextArea1.getText());
+                        rpi.setQty(jTextField4.getText());
+                        rpi.setStockId(String.valueOf(jTable1.getValueAt(row, 2)));
 
-                        if (option == JOptionPane.YES_OPTION) {
-                            Double newQty = Double.parseDouble(found.getQty()) + repairqty;
+                        String uniqueKey = String.valueOf(jTable1.getValueAt(row, 0)) + "-" + String.valueOf(jTable1.getValueAt(row, 2));
 
-                            if (newQty > invoiceItemQty) {
-                                JOptionPane.showMessageDialog(this, "Add valid qty less than " + invoiceItemQty, "Warning", JOptionPane.WARNING_MESSAGE);
-                            } else {
+                        if (repairProductMap.get(uniqueKey) == null) {
+                            repairProductMap.put(uniqueKey, rpi);
+                        } else {
+                            RepairProductItem found = repairProductMap.get(uniqueKey);
 
-                                found.setQty(String.valueOf(newQty));
+                            int option = JOptionPane.showConfirmDialog(this, "Do you want to update quantity of the repair product: " + String.valueOf(jTable1.getValueAt(row, 3)), "Warning ", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
+
+                            if (option == JOptionPane.YES_OPTION) {
+                                Double newQty = Double.parseDouble(found.getQty()) + repairqty;
+
+                                if (newQty > invoiceItemQty) {
+                                    JOptionPane.showMessageDialog(this, "Add valid qty less than " + invoiceItemQty, "Warning", JOptionPane.WARNING_MESSAGE);
+                                } else {
+
+                                    found.setQty(String.valueOf(newQty));
+                                }
                             }
+
                         }
 
+                        loadRepairProductItem();
+                        jTextArea1.setText("");
+                        // jTextField4.setText("");
+                        jTextField3.setText("");
                     }
-
-                    loadRepairProductItem();
-                    jTextArea1.setText("");
-                    // jTextField4.setText("");
-                    jTextField3.setText("");
-
                 }
-
             }
         }
 
@@ -614,9 +663,16 @@ public class RepairAdd extends javax.swing.JFrame {
 
                 for (RepairProductItem rpi : repairProductMap.values()) {
 
-                    //  MySQL.executeIUD("INSERT INTO `repair_request` (`repair_id`,`stock_id`,`problem`,`qty`,`submit_date`,`invoice_id`,`employee_email`,`repair_status_id`) VALUES ('"+rpi.getRepairID()+"','"+rpi.getStockId()+"','"+rpi.getProblem()+"','"+rpi.getQty()+"','"+date+"','"+rpi.getInvoiceId()+"','"+empEmail+"','1') ");
+                    int repairIteration = 1;
+
+                    ResultSet rs = MySQL.executeSearch("SELECT `repair_iteration` from `repair_request_item` where `stock_id`='" + rpi.getStockId() + "' AND `invoice_id`='" + rpi.getInvoiceId() + "' ORDER BY `submit_date` ASC  ");
+
+                    while (rs.next()) {
+                        repairIteration = rs.getInt("repair_iteration") + 1;
+                    }
+
                     //insert into repair request item table
-                    MySQL.executeIUD("insert into `repair_request_item` (`problem`,`qty`,`submit_date`,`repair_status_id`,`stock_id`,`repair_request_repair_id`,`invoice_id`) values ('" + rpi.getProblem() + "','" + rpi.getQty() + "','" + date + "','1','" + rpi.getStockId() + "','" + rpi.getRepairID() + "','" + rpi.getInvoiceId() + "') ");
+                    MySQL.executeIUD("insert into `repair_request_item` (`problem`,`qty`,`submit_date`,`repair_status_id`,`stock_id`,`repair_request_repair_id`,`invoice_id`,`repair_iteration`) values ('" + rpi.getProblem() + "','" + rpi.getQty() + "','" + date + "','1','" + rpi.getStockId() + "','" + rpi.getRepairID() + "','" + rpi.getInvoiceId() + "','" + repairIteration + "') ");
 
                 }
 
@@ -637,32 +693,36 @@ public class RepairAdd extends javax.swing.JFrame {
 
         jTextField4.setText("1");
 
-        if (evt.getClickCount() == 2) {
+        int row = jTable1.getSelectedRow();
 
-            int row = jTable1.getSelectedRow();
+        String invoiceId = String.valueOf(jTable1.getValueAt(row, 0));
 
-            String invoiceId = String.valueOf(jTable1.getValueAt(row, 0));
+        jTextField3.setText(String.valueOf(jTable1.getValueAt(row, 0)));
 
-            jTextField3.setText(String.valueOf(jTable1.getValueAt(row, 0)));
-            
-            if(String.valueOf(jTable1.getValueAt(row, 9)).equals("yes")){
+        if (evt.getClickCount() == 1) {
 
-            int option = JOptionPane.showConfirmDialog(this, "Do you want to view repair history?", "Warning", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
+            loadOldRepairProducts(invoiceId);
 
-            if (option == JOptionPane.YES_OPTION) {
+        } else if (evt.getClickCount() == 2) {
 
-                if (fr == null || !fr.isDisplayable()) {
-                    fr = new FindRepairs();
-                    fr.setVisible(true);
-                    fr.getjTextField1().setText(invoiceId);
-                    fr.getjTextField1().setEnabled(false);
+            if (String.valueOf(jTable1.getValueAt(row, 9)).equals("yes")) {
 
-                } else {
-                    fr.toFront();
-                    fr.requestFocus();
+                int option = JOptionPane.showConfirmDialog(this, "Do you want to view repair history?", "Warning", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
 
+                if (option == JOptionPane.YES_OPTION) {
+
+                    if (fr == null || !fr.isDisplayable()) {
+                        fr = new FindRepairs();
+                        fr.setVisible(true);
+                        fr.getjTextField1().setText(invoiceId);
+                        fr.getjTextField1().setEnabled(false);
+
+                    } else {
+                        fr.toFront();
+                        fr.requestFocus();
+
+                    }
                 }
-            }
 
             }
         }
@@ -678,7 +738,9 @@ public class RepairAdd extends javax.swing.JFrame {
     }//GEN-LAST:event_jTextField2ActionPerformed
 
     private void jTextField5KeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTextField5KeyReleased
-        loadOldRepairProducts();
+        loadOldRepairProducts(jTextField5.getText());
+
+        jTable1.clearSelection();
     }//GEN-LAST:event_jTextField5KeyReleased
 
     private void jTable2MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jTable2MouseClicked
@@ -688,8 +750,7 @@ public class RepairAdd extends javax.swing.JFrame {
         String status = String.valueOf(jTable2.getValueAt(row, 3));
 
         if (status.equals("Collected")) {
-         //   this.repairID =String.valueOf(jTable2.getValueAt(row, 0));
-         //   jTextField1.setText(this.repairID);
+
             loadOldRepairInvoiceItems();
         } else {
 
@@ -701,24 +762,30 @@ public class RepairAdd extends javax.swing.JFrame {
     private void jTable3MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jTable3MouseClicked
         int row = jTable3.getSelectedRow();
 
-     
+        if (evt.getClickCount() == 2) {
 
-         if(evt.getClickCount() ==2){
-     
             String removeUniqueKey = String.valueOf(jTable3.getValueAt(row, 4)) + "-" + String.valueOf(jTable3.getValueAt(row, 1));
 
             if (repairProductMap.containsKey(removeUniqueKey)) {
                 repairProductMap.remove(removeUniqueKey);
                 loadRepairProductItem();
             }
-         }
+        }
 
-   
+
     }//GEN-LAST:event_jTable3MouseClicked
 
     private void jTextField5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField5ActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_jTextField5ActionPerformed
+
+    private void jTextField1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField1ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jTextField1ActionPerformed
+
+    private void jTextField3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField3ActionPerformed
+        
+    }//GEN-LAST:event_jTextField3ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -764,16 +831,20 @@ public class RepairAdd extends javax.swing.JFrame {
     private void clearAll() {
 
         generateRepairProductId();
-        repairProductMap.clear();
-        loadInvoiceItems();
-        loadRepairProductItem();
+       
+       
+        jTextField5.setText("");
+        
         jTable1.clearSelection();
         jTable3.clearSelection();
         jTextField4.setText("");
         jTextField3.setText("");
         jTextArea1.setText("");
         jTextField3.setText("");
-        jTextField5.setText("");
+         loadInvoiceItems();
+        loadRepairProductItem();
+         repairProductMap.clear();
+        loadOldRepairProducts(jTextField5.getText());
 
     }
 }

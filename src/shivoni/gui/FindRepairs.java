@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
-package gui;
+package shivoni.gui;
 
 
 import com.formdev.flatlaf.themes.FlatMacDarkLaf;
@@ -103,6 +103,7 @@ public class FindRepairs extends javax.swing.JFrame {
                 vector.add(rs.getString("invoice.date"));
                 vector.add(rs.getString("repair_status.name"));
                 vector.add(rs.getString("repair_request_item.qty"));
+                vector.add(rs.getString("repair_request_item.repair_iteration"));
                 
                 dtm.addRow(vector);
                 
@@ -255,11 +256,11 @@ public class FindRepairs extends javax.swing.JFrame {
 
             },
             new String [] {
-                "Repaire ID", "Invoice ID", "Stock ID", "Product Name", "Submit Date", "Employee Email", "Problem", "Warranty", " Purchased Date", "Status", "Quantity"
+                "Repaire ID", "Invoice ID", "Stock ID", "Product Name", "Submit Date", "Employee Email", "Problem", "Warranty", " Purchased Date", "Status", "Quantity", "Repair Term"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false, false, false, false, false, false
+                false, false, false, false, false, false, false, false, false, false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -358,7 +359,7 @@ public class FindRepairs extends javax.swing.JFrame {
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(jTextField6, javax.swing.GroupLayout.DEFAULT_SIZE, 243, Short.MAX_VALUE)
                     .addComponent(jTextField1))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 82, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 218, Short.MAX_VALUE)
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel5Layout.createSequentialGroup()
                         .addComponent(jLabel12)

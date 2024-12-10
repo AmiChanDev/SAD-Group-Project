@@ -23,6 +23,7 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.table.DefaultTableModel;
 import model.MySQL;
+ import shivoni.gui.RepairAdd;
 
 import shivoni.model.ReturnProductItem;
 
@@ -32,20 +33,19 @@ public class ReturnProductManagement extends javax.swing.JFrame {
     HashMap<String, ReturnProductItem> returnProductMap = new HashMap<>();
 
     public ReturnProductManagement(String email) {
-        
-         try {
-            
+
+        try {
+
             UIManager.setLookAndFeel(new FlatMacDarkLaf());
-            
+
         } catch (UnsupportedLookAndFeelException e) {
             e.printStackTrace();
         }
-          
-            SwingUtilities.updateComponentTreeUI(this);
+
+        SwingUtilities.updateComponentTreeUI(this);
         this.revalidate();
         this.repaint();
-        
-        
+
         initComponents();
         jTextField5.setText(email);
         loadCondition();
@@ -61,8 +61,7 @@ public class ReturnProductManagement extends javax.swing.JFrame {
 
             String invoiceId = jTextField2.getText();
 
-            String query = "SELECT * FROM `invoice_item` INNER JOIN `stock` ON `stock`.`id`=`invoice_item`.`stock_id` INNER JOIN `invoice` ON `invoice`.`id`=`invoice_item`.`invoice_id` ";
-
+            String query = "SELECT * FROM `invoice_item` INNER JOIN `stock` ON `stock`.`id`=`invoice_item`.`stock_id` INNER JOIN `invoice` ON `invoice`.`id`=`invoice_item`.`invoice_id` INNER JOIN `product` ON `product`.`id`=`stock`.`product_id` INNER JOIN `warranty` ON `warranty`.`id`=`product`.`warranty_id`";
             List<String> conditions = new ArrayList<>();
 
             if (!stockId.isEmpty()) {
@@ -89,11 +88,29 @@ public class ReturnProductManagement extends javax.swing.JFrame {
 
             while (resultSet.next()) {
                 Vector<String> vector = new Vector<>();
-                vector.add(resultSet.getString("invoice_item.invoice_id"));
+                 vector.add(resultSet.getString("invoice_item.invoice_id"));
                 vector.add(resultSet.getString("invoice.employee_email"));
                 vector.add(resultSet.getString("invoice_item.stock_id"));
                 vector.add(resultSet.getString("stock.selling_price"));
                 vector.add(resultSet.getString("invoice_item.qty"));
+                vector.add(resultSet.getString("warranty.period"));
+                vector.add(resultSet.getString("warranty.conditions"));
+              
+                
+                
+                ResultSet rs2 = MySQL.executeSearch("SELECT * FROM `repair_request_item` INNER JOIN `repair_status` ON `repair_status`.`id`=`repair_request_item`.`repair_status_id` WHERE `stock_id`='"+resultSet.getString("invoice_item.stock_id")+"' AND `invoice_id`='"+resultSet.getString("invoice_item.invoice_id")+"' ");
+                
+                if(rs2.next()){
+                    if(rs2.getString("repair_status.name").equals("Collected") ||rs2.getString("repair_status.name").equals("Canceled")){
+                          vector.add("No"); 
+                    }else{
+                       vector.add("Yes");  
+                    }
+                  
+                 
+                }else{
+                    vector.add("No"); 
+                }
 
                 model.addRow(vector);
             }
@@ -107,7 +124,7 @@ public class ReturnProductManagement extends javax.swing.JFrame {
 
         try {
 
-            ResultSet resultset = MySQL.executeSearch("SELECT * FROM `product_condition`");
+            ResultSet resultset = MySQL.executeSearch("SELECT * FROM `return_product_condition`");
 
             Vector<String> vector = new Vector<>();
             vector.add("Select");
@@ -191,7 +208,6 @@ public class ReturnProductManagement extends javax.swing.JFrame {
         jTextField4.setText(String.valueOf(returnId));
     }
 
-
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -266,11 +282,11 @@ public class ReturnProductManagement extends javax.swing.JFrame {
 
             },
             new String [] {
-                "Invoice ID", "Employee Email(sold)", "Stock ID", "Price", "qty"
+                "Invoice ID", "Employee Email(sold)", "Stock ID", "Price", "qty", "W.Period", "W.Condition", "Under Repair"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false
+                false, false, false, false, false, false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -300,14 +316,12 @@ public class ReturnProductManagement extends javax.swing.JFrame {
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
             .addGroup(jPanel2Layout.createSequentialGroup()
-                .addGap(19, 19, 19)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 786, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jScrollPane1))
+                .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -539,9 +553,10 @@ public class ReturnProductManagement extends javax.swing.JFrame {
 
 
     }//GEN-LAST:event_jTable1MouseClicked
-
+private RepairAdd radd;
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         int row = jTable1.getSelectedRow();
+       
 
         if (row == -1) {
             JOptionPane.showMessageDialog(this, "Please select a row", "Warning", JOptionPane.WARNING_MESSAGE);
@@ -550,10 +565,30 @@ public class ReturnProductManagement extends javax.swing.JFrame {
             String invoiceid = String.valueOf(jTable1.getValueAt(row, 0));
             String stockid = String.valueOf(jTable1.getValueAt(row, 2));
             String returnPrice = String.valueOf(jTable1.getValueAt(row, 3));
+            String repairStatus =String.valueOf(jTable1.getValueAt(row, 7)); 
             //   String returnQty =jTextField3.getText();
             //  String invoiceItmQty =  String.valueOf(jTable1.getValueAt(row, 4)) ;
-            if (jComboBox1.getSelectedItem().equals("Select")) {
+            if(repairStatus.equals("Yes")){
+                JOptionPane.showMessageDialog(this, "Product is under repair", "Warning", JOptionPane.WARNING_MESSAGE);
+            }else if (jComboBox1.getSelectedItem().equals("Select")) {
                 JOptionPane.showMessageDialog(this, "Please select a condition", "Warning", JOptionPane.WARNING_MESSAGE);
+            }else if (jComboBox1.getSelectedItem().equals("Not Acceptable")) {
+               int option1 =  JOptionPane.showConfirmDialog(this, "Do you want to repair this product, Invoice id: " +invoiceid +" and stock id: "+stockid,"Information",JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
+               
+               if(option1==JOptionPane.YES_OPTION){
+                   this.dispose();
+                   
+                   if(radd==null || !radd.isDisplayable()){
+                       radd = new RepairAdd();
+                       radd.setVisible(true);
+                       radd.getjTextField3().setText(invoiceid);
+                       radd.invokeLoadInvoiceItems();
+                   }else{
+                       radd.toFront();
+                       radd.requestFocus();
+                   }
+                   
+               }
             } else if (jTextField3.getText().isEmpty()) {
                 JOptionPane.showMessageDialog(this, "Please type a quantity", "Warning", JOptionPane.WARNING_MESSAGE);
             } else if (!jTextField3.getText().matches("^\\d+$")) {
@@ -587,19 +622,21 @@ public class ReturnProductManagement extends javax.swing.JFrame {
                     } else {
                         ReturnProductItem found = returnProductMap.get(uniqueKey);
 
-                        int option = JOptionPane.showConfirmDialog(this,
-                                "Do you want to update quantity of the stock(return):" + stockid,
-                                "Warning", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
+                        Double newQty = Double.parseDouble(found.getQty()) + returnQty;
 
-                        if (option == JOptionPane.YES_OPTION) {
+                        if (newQty > invoiceItmQty) {
+                            JOptionPane.showMessageDialog(this, "Add valid qty less than " + invoiceItmQty, "Warning", JOptionPane.WARNING_MESSAGE);
 
-                            Double newQty = Double.parseDouble(found.getQty()) + returnQty;
+                        } else {
 
-                            if (newQty > invoiceItmQty) {
-                                JOptionPane.showMessageDialog(this, "Add valid qty less than " + invoiceItmQty, "Warning", JOptionPane.WARNING_MESSAGE);
+                            int option = JOptionPane.showConfirmDialog(this,
+                                    "Do you want to update quantity of the stock(return):" + stockid,
+                                    "Information", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
 
-                            } else {
+                            if (option == JOptionPane.YES_OPTION) {
+
                                 found.setQty(String.valueOf(Double.parseDouble(found.getQty()) + returnQty));
+
                             }
 
                         }
@@ -616,54 +653,52 @@ public class ReturnProductManagement extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void saveReturnInvoiceButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveReturnInvoiceButtonActionPerformed
-        
-        if(jFormattedTextField1.getText().isEmpty()){
-             JOptionPane.showMessageDialog(this, "Please add a return product", "Warning", JOptionPane.WARNING_MESSAGE);
-        }else{
-        
+
+        if (jFormattedTextField1.getText().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Please add a return product", "Warning", JOptionPane.WARNING_MESSAGE);
+        } else {
 
 //  int row = jTable2.getSelectedRow();
+            //     String returnId = this.returnId;
+            String date = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+            //    String finalreturnQty = String.valueOf(jTable2.getValueAt(row, 4));
+            String empEmail = jTextField5.getText();
+            //   String invoiceId = String.valueOf(jTable2.getValueAt(row, 3));
+            //    String stockID = String.valueOf(jTable2.getValueAt(row, 2));
+            //    String condition = String.valueOf(jTable2.getValueAt(row, 1));
+            String returnPriceDiscount = jFormattedTextField1.getText();
 
-        //     String returnId = this.returnId;
-        String date = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
-        //    String finalreturnQty = String.valueOf(jTable2.getValueAt(row, 4));
-        String empEmail = jTextField5.getText();
-        //   String invoiceId = String.valueOf(jTable2.getValueAt(row, 3));
-        //    String stockID = String.valueOf(jTable2.getValueAt(row, 2));
-        //    String condition = String.valueOf(jTable2.getValueAt(row, 1));
-        String returnPriceDiscount = jFormattedTextField1.getText();
+            try {
 
-        try {
+                for (ReturnProductItem returnPItem : returnProductMap.values()) {
 
-            for (ReturnProductItem returnPItem : returnProductMap.values()) {
+                    //insert to returnProduct table
+                    MySQL.executeIUD("INSERT INTO `return_product` "
+                            + "(`returnId`, `return_date`, `qty`,`return_PriceDiscount`,`employee_email`, `invoice_id`, `stock_id`, `return_product_condition_id`) "
+                            + "VALUES ('" + jTextField4.getText() + "', '" + date + "', '" + returnPItem.getQty() + "', '" + returnPItem.getStockPrice() + "', '"
+                            + empEmail + "', '" + returnPItem.getInvoiceID() + "', '" + returnPItem.getStockID() + "', '"
+                            + returnPItem.getCondition() + "')");
 
-                //insert to returnProduct table
-                MySQL.executeIUD("INSERT INTO `returnproduct` "
-                        + "(`returnId`, `returnDate`, `qty`, `employee_email`, `invoice_id`, `stock_id`, `product_condition_id`, `returnPriceDiscount`) "
-                        + "VALUES ('" + jTextField4.getText() + "', '" + date + "', '" + returnPItem.getQty() + "', '"
-                        + empEmail + "', '" + returnPItem.getInvoiceID() + "', '" + returnPItem.getStockID() + "', '"
-                        + returnPItem.getCondition() + "', '" + returnPItem.getStockPrice() + "')");
+                    //update invoice item 
+                    if (returnPItem.getCondition().equals("1")) {
 
-                //update invoice item 
-                if (returnPItem.getCondition().equals("2")) {
+                        MySQL.executeIUD("UPDATE `stock` SET `qty`=`qty`+'" + returnPItem.getQty() + "' WHERE `id`='" + returnPItem.getStockID() + "' ");
+                    }
 
-                    MySQL.executeIUD("UPDATE `stock` SET `qty`=`qty`+'" + returnPItem.getQty() + "' WHERE `id`='" + returnPItem.getStockID() + "' ");
+                    MySQL.executeIUD("UPDATE `invoice_item` SET `return_statement`='no' WHERE `stock_id`='" + returnPItem.getStockID() + "' AND `invoice_id`='" + returnPItem.getInvoiceID() + "' ");
+                    loadInvoiceItem();
+                    
+                    JOptionPane.showMessageDialog(this, "Success", "Information", JOptionPane.INFORMATION_MESSAGE);
+
                 }
-
-                MySQL.executeIUD("UPDATE `invoice_item` SET `return_statement`='no' WHERE `stock_id`='" + returnPItem.getStockID() + "' AND `invoice_id`='" + returnPItem.getInvoiceID() + "' ");
-                loadInvoiceItem();
-
-               
-            }
-            
-         
+                
 
                 clearAll();
 
-            // JOptionPane.showMessageDialog(this, "Return Products Saved", "Information", JOptionPane.INFORMATION_MESSAGE);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+                // JOptionPane.showMessageDialog(this, "Return Products Saved", "Information", JOptionPane.INFORMATION_MESSAGE);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
 
     }//GEN-LAST:event_saveReturnInvoiceButtonActionPerformed
@@ -674,7 +709,7 @@ public class ReturnProductManagement extends javax.swing.JFrame {
         jTextField3.setText("");
         jTable1.clearSelection();
         jTable2.clearSelection();
-         jComboBox1.setSelectedIndex(0);
+        jComboBox1.setSelectedIndex(0);
         generateReturnId();
         clearAll();
 
@@ -686,11 +721,11 @@ public class ReturnProductManagement extends javax.swing.JFrame {
         jTextField2.setEditable(false);
         jTextField3.setEditable(false);
         saveReturnInvoiceButton.setEnabled(false);
-      jComboBox1.setSelectedIndex(0);
-        jButton1.setEnabled(false);
+        jComboBox1.setSelectedIndex(0);
+      //  jButton1.setEnabled(false);
         jComboBox1.setEditable(false);
         jTable1.setEnabled(true);
-         jTable1.clearSelection();
+        jTable1.clearSelection();
         generateReturnId();
         //  jTable2.setEnabled(false);
 

@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
-package gui;
+package shivoni.gui;
 
 import com.sun.source.tree.ParenthesizedTree;
 import java.awt.Component;
@@ -66,7 +66,7 @@ public class RepairCompletion extends javax.swing.JFrame {
         jDateChooser1.setEnabled(false);
         jDateChooser2.setEnabled(false);
 
-       loadTextfieldEnable();
+      
 
         loadRepairStatus();
         loadRepairStatusTable();
@@ -109,6 +109,7 @@ public class RepairCompletion extends javax.swing.JFrame {
                 vector.add(rs.getString("repair_request_item.repair_request_repair_id"));
                 vector.add(rs.getString("repair_request_item.stock_id"));
                 vector.add(rs.getString("repair_status.name"));
+                vector.add(rs.getString("repair_request_item.repair_iteration"));
                 dtm2.addRow(vector);
                 
              
@@ -146,16 +147,16 @@ public class RepairCompletion extends javax.swing.JFrame {
         }
     }
     
-    private void loadTextfieldEnable(){
-        
-        if(jLabel10.getText().equals("Completed")){
-             jDateChooser1.setEnabled(true);
-        }else if(jLabel10.getText().equals("Collected")){
-            jDateChooser2.setEnabled(true);
-        }
-        
-    }
-    
+  /*  private void loadTextfieldEnable(){
+  *      
+  *      if(jLabel10.getText().equals("Completed")){
+  *           jDateChooser1.setEnabled(true);
+  *      }else if(jLabel10.getText().equals("Collected")){
+  *          jDateChooser2.setEnabled(true);
+   *     }
+    *    
+  *  }
+   */ 
     private void loadRepairCompletionDetails(){
         try {
             ResultSet rs = MySQL.executeSearch("SELECT * FROM `repair_request_item` INNER JOIN `repair_status` ON `repair_status`.`id`=`repair_request_item`.`repair_status_id` WHERE `invoice_id`='" + this.invoiceId + "' AND `stock_id`='" + this.sid + "' AND `repair_request_repair_id`='"+jTextField1.getText()+"' ");  
@@ -386,11 +387,11 @@ public class RepairCompletion extends javax.swing.JFrame {
 
             },
             new String [] {
-                "Repaire ID", "Stock ID", "Repaire Status"
+                "Repaire ID", "Stock ID", "Repaire Status", "Repair Term"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false
+                false, false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -415,6 +416,11 @@ public class RepairCompletion extends javax.swing.JFrame {
         });
 
         jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Select", "Pending", "Checked", "Completed", "Collected", "Canceled", "with Warenty" }));
+        jComboBox1.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                jComboBox1ItemStateChanged(evt);
+            }
+        });
 
         jLabel8.setText("Created Date");
 
@@ -615,7 +621,7 @@ public class RepairCompletion extends javax.swing.JFrame {
                     jTextArea3.setText(rs.getString("note"));
                     
                     jLabel10.setText(String.valueOf(jTable1.getValueAt(row, 2)));
-                    loadTextfieldEnable();
+                   
 
                     loadRepairStatusTable();
                     loadRepairCompletionDetails();
@@ -635,16 +641,21 @@ public class RepairCompletion extends javax.swing.JFrame {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         String status = String.valueOf(jComboBox1.getSelectedItem());
+        
+        if(status.equals("Select")){
+            JOptionPane.showMessageDialog(this,"Please select a Status", "warning", JOptionPane.WARNING_MESSAGE);
+        }else{
 
         try {
 
             MySQL.executeIUD("update `repair_request_item` set `repair_status_id`='" + repairStatusMap.get(status) + "' WHERE `repair_request_repair_id`='" + jTextField1.getText() + "' AND `stock_id`='" + jTextField3.getText() + "' AND `invoice_id`='" + jTextField2.getText() + "' ");
             loadRepairStatusTable();
            jLabel10.setText(status);
-           loadTextfieldEnable();
+          
 
         } catch (Exception e) {
             e.printStackTrace();
+        }
         }
 
 
@@ -784,6 +795,24 @@ public class RepairCompletion extends javax.swing.JFrame {
            
        }
     }//GEN-LAST:event_jButton5ActionPerformed
+
+    private void jComboBox1ItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_jComboBox1ItemStateChanged
+       String selectedStatus = String.valueOf(jComboBox1.getSelectedItem());
+       
+       Date date = new Date();
+       SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+       String statusChangedDate = sdf.format(date);
+       
+       if(selectedStatus.equals("Completed")){
+           jDateChooser1.setDate(date);
+       }else if(selectedStatus.equals("Collected")){
+           jDateChooser2.setDate(date);
+       }else{
+            jDateChooser1.setDate(null);
+           jDateChooser2.setDate(null);
+       }
+       
+    }//GEN-LAST:event_jComboBox1ItemStateChanged
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

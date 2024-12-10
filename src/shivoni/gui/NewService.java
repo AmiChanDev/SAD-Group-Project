@@ -2,13 +2,18 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
-package gui;
+package shivoni.gui;
 
+import com.formdev.flatlaf.FlatLaf;
+import com.formdev.flatlaf.themes.FlatMacDarkLaf;
+import shivoni.gui.RepairInvoice;
 import javax.swing.JOptionPane;
 import java.sql.ResultSet;
 import java.util.Vector;
 import javax.swing.table.DefaultTableModel;
 import model.MySQL;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  *
@@ -35,10 +40,24 @@ public class NewService extends javax.swing.JFrame {
      private void loadServices(){
         try {
             
-            ResultSet rs = MySQL.executeSearch("SELECT * FROM `service`");
+            String query = "SELECT * FROM `service`";
+            
+            List<String> conditions = new ArrayList<>();
+            
+            if(!jTextField3.getText().isEmpty()){
+                conditions.add("`name` LIKE '"+jTextField3.getText()+"%' ");
+            }
+            
+            if(!conditions.isEmpty()){
+                query += " WHERE" +String.join(" AND", conditions);
+            }
+            
+            ResultSet rs = MySQL.executeSearch(query);
             
             DefaultTableModel dtm = (DefaultTableModel) jTable2.getModel();
             dtm.setRowCount(0);
+            
+            
             
             while (rs.next()) { 
                 
@@ -54,6 +73,8 @@ public class NewService extends javax.swing.JFrame {
             e.printStackTrace();
         }
     }
+     
+    
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -191,6 +212,12 @@ public class NewService extends javax.swing.JFrame {
         jScrollPane2.setViewportView(jTable2);
 
         jLabel4.setText("Search Service");
+
+        jTextField3.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                jTextField3KeyReleased(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -342,34 +369,15 @@ public class NewService extends javax.swing.JFrame {
       clearAll();
     }//GEN-LAST:event_jButton4ActionPerformed
 
+    private void jTextField3KeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTextField3KeyReleased
+       loadServices();
+    }//GEN-LAST:event_jTextField3KeyReleased
+
     /**
      * @param args the command line arguments
      */
     public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(NewService.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(NewService.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(NewService.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(NewService.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-
-        /* Create and display the form */
+        FlatMacDarkLaf.setup();
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 new NewService().setVisible(true);
