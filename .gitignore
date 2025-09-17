@@ -1,21 +1,41 @@
-#ant specific
-dist/
-build/
-Log Reports/
+/build/
+/nbproject/private/
+/dist/
+# Created by https://www.toptal.com/developers/gitignore/api/java,xcodeinjection
+# Edit at https://www.toptal.com/developers/gitignore?templates=java,xcodeinjection
 
-#netbeans specific
-core
-nbproject/
-manifest.mf
-build.xml
-readme.md
-
-#java specific
+### Java ###
+# Compiled class file
 *.class
 
-#general swap/backup files
-*.so
+# Log file
 *.log
-*.out
-*~
-*.swp
+
+# BlueJ files
+*.ctxt
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# Package Files #
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+hs_err_pid*
+replay_pid*
+
+### XcodeInjection ###
+# Code Injection
+#
+# After new code Injection tools there's a generated folder /iOSInjectionProject
+# https://github.com/johnno1962/injectionforxcode
+
+iOSInjectionProject/
+
+# End of https://www.toptal.com/developers/gitignore/api/java,xcodeinjection
